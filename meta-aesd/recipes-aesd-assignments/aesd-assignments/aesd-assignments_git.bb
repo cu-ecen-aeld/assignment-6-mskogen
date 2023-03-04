@@ -10,7 +10,7 @@ SRC_URI = "git://github.com/cu-ecen-aeld/assignments-3-and-later-mskogen.git;pro
 
 PV = "1.0+git${SRCPV}"
 # set to reference a specific commit hash in your assignment repo
-SRCREV = "1f9141f446f58cce1079d80e32fa619592b5fa97"
+SRCREV = "21e9a0932c3c99bcdf4488dcacd5f78bcc5f9b79"
 
 # This sets your staging directory based on WORKDIR, where WORKDIR is defined at 
 # https://docs.yoctoproject.org/ref-manual/variables.html?highlight=workdir#term-WORKDIR
@@ -21,7 +21,12 @@ S = "${WORKDIR}/git/server"
 # Add the aesdsocket application and any other files you need to install
 # See https://git.yoctoproject.org/poky/plain/meta/conf/bitbake.conf?h=kirkstone
 FILES:${PN} += "${bindir}/aesdsocket ${sysconfdir}/init.d/aesdsocket-start-stop"
-TARGET_LDFLAGS += "-pthread -lrt"
+TARGET_LDFLAGS += "-lpthread -lrt"
+
+# I had a GCC bug: libgcc_s.so.1 must be installed for pthread_exit to work
+# I had to explicitly call out the library dependency here for pthread_exit to
+# not crash my aesdsocket application
+RDEPENDS:${PN} += "libgcc"
 
 # Setup update-rc.d config to install aesdsocket-start-stop init scripts
 INITSCRIPT_PACKAGES = "${PN}"
